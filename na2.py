@@ -5,6 +5,9 @@ from fractions import Fraction
 import openpyxl
 from tkinter import ttk, filedialog, messagebox
 
+# List to store all calculations
+calculation_data = []
+
 # GUI construction
 root = tk.Tk()
 root.title("Water Pipe Diameter and Head Loss Calculator")
@@ -124,7 +127,6 @@ def populate_diameter_dropdown():
     diameters = [str(get_diameter(d)) for d in pipe_data_constant_speed_none_noise_sensitive["pipe_diameter_inches"]]
   diameter_dropdown['values'] = diameters
 
-# Function to calculate when the button is clicked
 def calculate_diameter():
     selected_system = system_var.get()
     selected_noise = noise_var.get()
@@ -186,7 +188,14 @@ def calculate_diameter():
     head_loss_label.config(text=f"Head Loss: {head_loss:.2f} meters")
     velocity_label.config(text=f"Velocity: {velocity:.2f}ft/s")
 
-
+    # Store calculation data
+    calculation_data.append({
+        "nominal_diameter": selected_diameter,
+        "internal_diameter": inner_diameter,
+        "external_diameter": external_diameter,
+        "head_loss": head_loss,
+        "velocity": velocity
+    })
 
 # Connect the checkbox to the dropdown menu
 def update_diameter_dropdown(*args):
@@ -276,6 +285,39 @@ head_loss_label.grid(row=8, column=0, columnspan=2, padx=10, pady=10)
 velocity_label = ttk.Label(root, text="")
 velocity_label.grid(row=9, column=0, columnspan=2, padx=10, pady=10)
 
+
+from openpyxl import Workbook
+
+def export_to_excel():
+    # Create a new Excel workbook
+    wb = Workbook()
+    sheet = wb.active
+    sheet.title = "Pipe Calculations"
+
+    # Write headers
+    headers = ["Nominal Diameter (inches)", "Internal Diameter (inches)", "External Diameter (inches)", "Head Loss (meters)", "Velocity (ft/s)"]
+    for col, header in enumerate(headers, start=1):
+        sheet.cell(row=1, column=col, value=header)
+
+    # Write calculation data
+    for i, data in enumerate(calculation_data, start=2):
+        sheet[f"A{i}"] = str(data["nominal_diameter"])  # Convert to string
+        sheet[f"B{i}"] = data["internal_diameter"]
+        sheet[f"C{i}"] = data["external_diameter"]
+        sheet[f"D{i}"] = data["head_loss"]
+        sheet[f"E{i}"] = data["velocity"]
+
+    # Ask user to choose where to save the file
+    file_path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel Workbook", "*.xlsx")])
+    if file_path:
+        # Save the workbook
+        wb.save(file_path)
+
+        messagebox.showinfo("Export Complete", "Data exported to Excel successfully!")
+
+# Button to export data to Excel
+export_button = ttk.Button(root, text="Export to Excel", command=export_to_excel)
+export_button.grid(row=13, column=0, columnspan=2, padx=10, pady=10)
 
 
 
