@@ -113,25 +113,36 @@ diameter_var = tk.StringVar()
 diameter_dropdown = ttk.Combobox(root, textvariable=diameter_var, values=[])
 diameter_dropdown.grid(row=12, column=1, padx=10, pady=10)
 
+from fractions import Fraction
+
+# Function to populate the diameter dropdown
 def populate_diameter_dropdown():
     if manual_diameter_var.get():
-        diameters = [str(d) for d in pipe_data_constant_speed_none_noise_sensitive["pipe_diameter_inches"]]
+        # Convert the decimal values to fractions, and specific cases
+        diameters = []
+        for d in pipe_data_constant_speed_none_noise_sensitive["pipe_diameter_inches"]:
+            if d == 0.5:
+                diameters.append("1/2")
+            elif d == 0.75:
+                diameters.append("3/4")
+            else:
+                diameters.append(str(Fraction(d).limit_denominator()))
     else:
         diameters = [str(float(d)) if not isinstance(d, Fraction) else str(d) for d in pipe_data_constant_speed_none_noise_sensitive["pipe_diameter_inches"]]
     diameter_dropdown['values'] = diameters
 
-from fractions import Fraction
 
+
+# Function to calculate when the button is clicked
 def calculate_diameter():
     selected_system = system_var.get()
     selected_noise = noise_var.get()
     selected_hours = hours_var.get().strip() 
     
-        # Check if the length entry is empty
+    # Check if the length entry is empty
     if length_entry.get() == "":
         messagebox.showerror("Error", "Please enter the pipe length.")
         return
-
 
     # Check if the flow rate entry is empty
     if flow_entry.get() == "":
@@ -156,8 +167,13 @@ def calculate_diameter():
 
     if manual_diameter_var.get():
         selected_diameter_str = diameter_var.get()  # Get the string representation of the fraction
-        # Convert the fraction string to its decimal equivalent
-        selected_diameter = float(Fraction(selected_diameter_str))
+        # Convert the selected diameter to fraction if necessary
+        if selected_diameter_str == "1/2":
+            selected_diameter = Fraction(1, 2)
+        elif selected_diameter_str == "3/4":
+            selected_diameter = Fraction(3, 4)
+        else:
+            selected_diameter = float(Fraction(selected_diameter_str))
     else:
         # Find the appropriate diameter
         for min_flow, max_flow in pipe_data["flow_range_gpm_at_" + selected_hours]:
@@ -175,9 +191,11 @@ def calculate_diameter():
 
     internal_label.config(text=f"Internal Diameter: {inner_diameter} inches")
     external_label.config(text=f"External Diameter: {external_diameter} inches")
-    result_label.config(text=f"Appropriate Diameter is: {selected_diameter} inches")
+    result_label.config(text=f"Nominal Diameter : {selected_diameter} inches")
     head_loss_label.config(text=f"Head Loss: {head_loss:.2f} meters")
     velocity_label.config(text=f"Velocity: {velocity:.2f}ft/s")
+
+
 
 # Connect the checkbox to the dropdown menu
 def update_diameter_dropdown(*args):
@@ -193,8 +211,6 @@ def update_diameter_dropdown(*args):
 diameter_dropdown.config(state="disabled")
 
 manual_diameter_var.trace_add('write', update_diameter_dropdown)
-
-
 
 # Label to display internal diameter
 internal_label = ttk.Label(root, text="")
@@ -268,5 +284,8 @@ head_loss_label.grid(row=8, column=0, columnspan=2, padx=10, pady=10)
 # Label to display velocity
 velocity_label = ttk.Label(root, text="")
 velocity_label.grid(row=9, column=0, columnspan=2, padx=10, pady=10)
+
+
+
 
 root.mainloop()
