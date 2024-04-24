@@ -290,10 +290,12 @@ velocity_label.grid(row=9, column=0, columnspan=2, padx=10, pady=10)
 def export_to_excel():
     # Create a new Excel workbook
     wb = Workbook()
+    
+    # Sheet for pipe calculations
     sheet = wb.active
     sheet.title = "Pipe Calculations"
 
-    # Write headers
+    # Write headers for calculations
     headers = ["Nominal Diameter (inches)", "Internal Diameter (inches)", "External Diameter (inches)", "Head Loss (meters)", "Velocity (ft/s)"]
     for col, header in enumerate(headers, start=1):
         cell = sheet.cell(row=1, column=col, value=header)
@@ -307,18 +309,46 @@ def export_to_excel():
         sheet.cell(row=i, column=4, value=data["head_loss"]).alignment = Alignment(horizontal='center', vertical='center')
         sheet.cell(row=i, column=5, value=data["velocity"]).alignment = Alignment(horizontal='center', vertical='center')
 
-    # Adjust column widths
-    column_widths = [25, 20, 20, 20, 20]  # Adjust according to your preference
+    # Adjust column widths for calculation sheet
+    column_widths = [26, 25, 25, 20, 20]  # Adjust according to your preference
     for i, width in enumerate(column_widths, start=1):
         column_letter = get_column_letter(i)
         sheet.column_dimensions[column_letter].width = width
+
+    # Sheet for total length
+    total_length_sheet = wb.create_sheet(title="Total Length")
+
+    # Write headers for total length
+    total_length_headers = ["Nominal Diameter (inches)", "Total Length (meters)"]
+    for col, header in enumerate(total_length_headers, start=1):
+        cell = total_length_sheet.cell(row=1, column=col, value=header)
+        cell.alignment = Alignment(horizontal='center', vertical='center')
+
+    # Calculate total length for each pipe diameter
+    total_lengths = {}
+    for data in calculation_data:
+        diameter = data["nominal_diameter"]
+        length = float(length_entry.get())
+        if diameter in total_lengths:
+            total_lengths[diameter] += length
+        else:
+            total_lengths[diameter] = length
+
+    # Write total lengths to the sheet
+    for i, (diameter, length) in enumerate(total_lengths.items(), start=2):
+        total_length_sheet.cell(row=i, column=1, value=str(diameter)).alignment = Alignment(horizontal='center', vertical='center')
+        total_length_sheet.cell(row=i, column=2, value=length).alignment = Alignment(horizontal='center', vertical='center')
+
+    # Adjust column widths for total length sheet
+    total_length_sheet.column_dimensions['A'].width = 25
+    total_length_sheet.column_dimensions['B'].width = 20
 
     # Ask user to choose where to save the file
     file_path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel Workbook", "*.xlsx")])
     if file_path:
         # Save the workbook
         wb.save(file_path)
-
+        
         messagebox.showinfo("Export Complete", "Data exported to Excel successfully!")
 
 # Button to export data to Excel
