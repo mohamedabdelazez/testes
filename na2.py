@@ -4,7 +4,9 @@ import math
 from fractions import Fraction
 import openpyxl
 from tkinter import ttk, filedialog, messagebox
-
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+from openpyxl.styles import Alignment
 # List to store all calculations
 calculation_data = []
 
@@ -285,9 +287,6 @@ head_loss_label.grid(row=8, column=0, columnspan=2, padx=10, pady=10)
 velocity_label = ttk.Label(root, text="")
 velocity_label.grid(row=9, column=0, columnspan=2, padx=10, pady=10)
 
-
-from openpyxl import Workbook
-
 def export_to_excel():
     # Create a new Excel workbook
     wb = Workbook()
@@ -297,15 +296,22 @@ def export_to_excel():
     # Write headers
     headers = ["Nominal Diameter (inches)", "Internal Diameter (inches)", "External Diameter (inches)", "Head Loss (meters)", "Velocity (ft/s)"]
     for col, header in enumerate(headers, start=1):
-        sheet.cell(row=1, column=col, value=header)
+        cell = sheet.cell(row=1, column=col, value=header)
+        cell.alignment = Alignment(horizontal='center', vertical='center')
 
     # Write calculation data
     for i, data in enumerate(calculation_data, start=2):
-        sheet[f"A{i}"] = str(data["nominal_diameter"])  # Convert to string
-        sheet[f"B{i}"] = data["internal_diameter"]
-        sheet[f"C{i}"] = data["external_diameter"]
-        sheet[f"D{i}"] = data["head_loss"]
-        sheet[f"E{i}"] = data["velocity"]
+        sheet.cell(row=i, column=1, value=str(data["nominal_diameter"])).alignment = Alignment(horizontal='center', vertical='center')
+        sheet.cell(row=i, column=2, value=data["internal_diameter"]).alignment = Alignment(horizontal='center', vertical='center')
+        sheet.cell(row=i, column=3, value=data["external_diameter"]).alignment = Alignment(horizontal='center', vertical='center')
+        sheet.cell(row=i, column=4, value=data["head_loss"]).alignment = Alignment(horizontal='center', vertical='center')
+        sheet.cell(row=i, column=5, value=data["velocity"]).alignment = Alignment(horizontal='center', vertical='center')
+
+    # Adjust column widths
+    column_widths = [25, 20, 20, 20, 20]  # Adjust according to your preference
+    for i, width in enumerate(column_widths, start=1):
+        column_letter = get_column_letter(i)
+        sheet.column_dimensions[column_letter].width = width
 
     # Ask user to choose where to save the file
     file_path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel Workbook", "*.xlsx")])
