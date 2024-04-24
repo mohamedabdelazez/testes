@@ -115,23 +115,14 @@ diameter_dropdown.grid(row=12, column=1, padx=10, pady=10)
 
 from fractions import Fraction
 
-# Function to populate the diameter dropdown
 def populate_diameter_dropdown():
-    if manual_diameter_var.get():
-        # Convert the decimal values to fractions, and specific cases
-        diameters = []
-        for d in pipe_data_constant_speed_none_noise_sensitive["pipe_diameter_inches"]:
-            if d == 0.5:
-                diameters.append("1/2")
-            elif d == 0.75:
-                diameters.append("3/4")
-            else:
-                diameters.append(str(Fraction(d).limit_denominator()))
-    else:
-        diameters = [str(float(d)) if not isinstance(d, Fraction) else str(d) for d in pipe_data_constant_speed_none_noise_sensitive["pipe_diameter_inches"]]
-    diameter_dropdown['values'] = diameters
-
-
+  if manual_diameter_var.get():
+    # Convert all values to string representations, including fractions
+    diameters = [str(d) for d in pipe_data_constant_speed_none_noise_sensitive["pipe_diameter_inches"]]
+  else:
+    # Convert to float if not already a Fraction, otherwise keep as Fraction
+    diameters = [str(get_diameter(d)) for d in pipe_data_constant_speed_none_noise_sensitive["pipe_diameter_inches"]]
+  diameter_dropdown['values'] = diameters
 
 # Function to calculate when the button is clicked
 def calculate_diameter():
@@ -173,7 +164,7 @@ def calculate_diameter():
         elif selected_diameter_str == "3/4":
             selected_diameter = Fraction(3, 4)
         else:
-            selected_diameter = float(Fraction(selected_diameter_str))
+            selected_diameter = float(selected_diameter_str)
     else:
         # Find the appropriate diameter
         for min_flow, max_flow in pipe_data["flow_range_gpm_at_" + selected_hours]:
