@@ -177,8 +177,10 @@ def update_diameter_dropdown(*args):
         diameter_dropdown.config(state="disabled")  # Disable the dropdown
         diameter_dropdown.set("")  # Clear the selection
 
-manual_diameter_var.trace_add('write', update_diameter_dropdown)
+# Set the diameter dropdown to disabled initially
+diameter_dropdown.config(state="disabled")
 
+manual_diameter_var.trace_add('write', update_diameter_dropdown)
 
 
 
