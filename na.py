@@ -103,15 +103,15 @@ def calculate_friction_factor(diameter, reynolds, roughness):
 # Create a checkbox for manual diameter selection
 manual_diameter_var = tk.BooleanVar()
 manual_diameter_checkbox = ttk.Checkbutton(root, text="Manual Diameter Selection", variable=manual_diameter_var, onvalue=True, offvalue=False)
-manual_diameter_checkbox.grid(row=12, column=0, columnspan=2, padx=10, pady=10)
+manual_diameter_checkbox.grid(row=12, column=0, columnspan=1, padx=10, pady=10)
 
 # Create a dropdown menu for pipe diameters
-diameter_label = ttk.Label(root, text="Choose Pipe Diameter:")
-diameter_label.grid(row=13, column=0, padx=10, pady=10)
+#diameter_label = ttk.Label(root, text="Choose Pipe Diameter:")
+#diameter_label.grid(row=12, column=1, padx=10, pady=10)
 
 diameter_var = tk.StringVar()
 diameter_dropdown = ttk.Combobox(root, textvariable=diameter_var, values=[])
-diameter_dropdown.grid(row=13, column=1, padx=10, pady=10)
+diameter_dropdown.grid(row=12, column=1, padx=10, pady=10)
 
 def populate_diameter_dropdown():
     if manual_diameter_var.get():
