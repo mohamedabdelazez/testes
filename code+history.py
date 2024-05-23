@@ -407,32 +407,50 @@ from tkinter import ttk, messagebox
 
 history_window = None  # Global variable for history window
 
-def delete_calculation():
-    global history_window  # Declare history_window as global
-    try:
-        index = history_listbox.curselection()[0]
-        calculation_data.pop(index)
-        history_listbox.delete(index)
-    except IndexError:
-        messagebox.showerror("Error", "Please select a calculation to delete.")
-
-
-history_window = None  # Define history_window as a global variable
-
 def show_history():
-    global history_window  # Access the global variable
+    global history_window
+
     if history_window is None:
         history_window = tk.Toplevel(root)
         history_window.title("Calculation History")
+
+        # Create listbox locally within the function
         history_listbox = tk.Listbox(history_window, width=50)
         history_listbox.pack(padx=10, pady=10)
-        delete_button = tk.Button(history_window, text="Delete", command=delete_calculation)
+
+        delete_button = tk.Button(history_window, text="Delete", command=lambda: delete_calculation(history_listbox))  # Pass listbox as argument
         delete_button.pack(padx=10, pady=10)
+
+        # Other history window elements (optional)
         history_window.protocol("WM_DELETE_WINDOW", lambda: hide_history(history_window))
-    history_window.deiconify()  # Show the window
+        print("Listbox created!")  # For debugging
+
+    else:
+        history_listbox.delete(0, tk.END)
+
+    # Update the listbox with calculation data
+    for data in calculation_data:
+        history_listbox.insert(tk.END, f"{data['nominal_diameter']} in")  # Modify format as needed
+
+def delete_calculation(listbox):  # Receive listbox as argument
+    if listbox is not None:
+        print("Listbox exists in delete_calculation!")  # For debugging
+        try:
+            index = listbox.curselection()[0]
+            calculation_data.pop(index)
+            listbox.delete(index)
+        except IndexError:
+            messagebox.showerror("Error", "Please select a calculation to delete.")
+    else:
+        messagebox.showerror("Error", "Calculation history is not available.")
 
 def hide_history(window):
-    window.withdraw()  # Hide the window when closed
+    window.withdraw()
+
+# Button for history
+history_button = ttk.Button(root, text="Calculation History", command=show_history)
+history_button.grid(row=18, column=0, columnspan=2, padx=10, pady=10)
+
 
 
 # Button to show calculation history
